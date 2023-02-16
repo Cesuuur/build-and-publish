@@ -70,25 +70,25 @@ pipeline {
                 }
            }
         }
-        post {
-            always {
-                sh '''
-                docker ps -a -q | xargs --no-run-if-empty docker stop $(docker ps -a -q) 
-                docker system prune -a -f --volumes
-                sudo rm -rf $WORKSPACE/$SERVICE_NAME/
-                '''
-            }
-            cleanup{
-                /* clean up our workspace */
+    }
+    post {
+        always {
+            sh '''
+            docker ps -a -q | xargs --no-run-if-empty docker stop $(docker ps -a -q) 
+            docker system prune -a -f --volumes
+            sudo rm -rf $WORKSPACE/$SERVICE_NAME/
+            '''
+        }
+        cleanup{
+            /* clean up our workspace */
+            deleteDir()
+            /* clean up tmp directory */
+            dir("${env.workspace}@tmp") {
                 deleteDir()
-                /* clean up tmp directory */
-                dir("${env.workspace}@tmp") {
-                    deleteDir()
-                }
-                /* clean up script directory */
-                dir("${env.workspace}@script") {
-                    deleteDir()
-                }
+            }
+            /* clean up script directory */
+            dir("${env.workspace}@script") {
+                deleteDir()
             }
         }
     }
