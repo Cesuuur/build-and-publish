@@ -62,14 +62,10 @@ pipeline {
                     rm -rf $SERVICE_NAME 
                     mkdir $SERVICE_NAME 
                     cd $SERVICE_NAME
-                    git clone credentialsId: $ https://username@github.com/username/repository.git
-
-                    git branch: 'master',
-                        credentialsId: '12345-1234-4696-af25-123455',
-                        url: 'ssh://git@bitbucket.org:company/repo.git'
                     git clone --single-branch --branch $GIT_HUB_BRANCH $GIT_HUB_URL .
                     '''
                 }
            }
         }
     }
+}
