@@ -70,6 +70,28 @@ pipeline {
                 }
            }
         }
+        stage('Check if there is a docker-compose in the repository') {
+            steps {
+                script{
+                    DOCKER_VAR = fileExists "${env.WORKSPACE}/${SERVICE_NAME}/docker-compose.yml"
+                }
+                echo "env DOCKER VAR is ${DOCKER_VAR}"
+            }
+        }
+        stage('Build') {
+            when {
+                expression {
+                    return !"${DOCKER_VAR}".toBoolean() 
+                }
+            }                
+            steps {
+                dir ("${env.WORKSPACE}/${SERVICE_NAME}/") {
+                    sh '''
+                    docker build -t ${SERVICE_NAME} .
+                    '''
+                }
+            }
+        }
     }
     post {
         always {
