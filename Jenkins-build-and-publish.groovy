@@ -64,6 +64,7 @@ pipeline {
                     rm -rf $SERVICE_NAME 
                     mkdir $SERVICE_NAME 
                     cd $SERVICE_NAME
+                    ls
                     git clone --single-branch --branch $GIT_HUB_BRANCH $GIT_HUB_URL .
                     '''
                 }
