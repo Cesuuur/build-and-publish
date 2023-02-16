@@ -21,21 +21,23 @@ pipeline {
     parameters {
         string(name: 'VERSION', defaultValue: '1.0', description: '')
         string(name: 'GIT_HUB_URL', description: 'URL of the Github Repository')
-        string(name: 'GIT_HUB_BRANCH', defaultValue: 'main', description: 'NETAPP branch name')
+        string(name: 'GIT_HUB_BRANCH', defaultValue: 'master', description: 'NETAPP branch name')
+        string(name: 'DOCKER_REGISTRY', defaultValue: 'dockerhub.hi.inet', description: 'Docker registry')
         // string(name: 'GIT_CICD_BRANCH', defaultValue: 'main', description: 'Deployment git branch name')
-        string(name: 'GIT_HUB_USER', defaultValue: 'main', description: 'Git hub user')
-        string(name: 'GIT_HUB_PASSWORD', defaultValue: 'main', description: 'Git hub password')
+        // string(name: 'GIT_HUB_USER', defaultValue: 'main', description: 'Git hub user')
+        // string(name: 'GIT_HUB_PASSWORD', defaultValue: 'main', description: 'Git hub password')
     }
 
     environment {
         GIT_HUB_URL="${params.GIT_HUB_URL}"
-        GIT_HUB_USER="${params.GIT_HUB_URL}"
-        GIT_HUB_PASSWORD="${params.GIT_HUB_URL}"
+        // GIT_HUB_USER="${params.GIT_HUB_URL}"
+        // GIT_HUB_PASSWORD="${params.GIT_HUB_URL}"
         // GIT_CICD_BRANCH="${params.GIT_CICD_BRANCH}"
         GIT_HUB_BRANCH="${params.GIT_HUB_BRANCH}"
         VERSION="${params.VERSION}"
         SERVICE_NAME = serviceName("${params.GIT_HUB_URL}").toLowerCase()
         DOCKER_VAR = false
+        DOCKER_REGISTRY="${params.DOCKER_REGISTRY}"
         PATH_DOCKER = getPath("${params.STAGE}")
     }
     stages {
@@ -66,6 +68,27 @@ pipeline {
                     '''
                 }
            }
+        }
+        post {
+            always {
+                sh '''
+                docker ps -a -q | xargs --no-run-if-empty docker stop $(docker ps -a -q) 
+                docker system prune -a -f --volumes
+                sudo rm -rf $WORKSPACE/$SERVICE_NAME/
+                '''
+            }
+            cleanup{
+                /* clean up our workspace */
+                deleteDir()
+                /* clean up tmp directory */
+                dir("${env.workspace}@tmp") {
+                    deleteDir()
+                }
+                /* clean up script directory */
+                dir("${env.workspace}@script") {
+                    deleteDir()
+                }
+            }
         }
     }
 }
