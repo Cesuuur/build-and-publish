@@ -116,17 +116,17 @@ pipeline {
             sudo rm -rf $WORKSPACE/$SERVICE_NAME/
             '''
         }
-        cleanup{
-            /* clean up our workspace */
-            deleteDir()
-            /* clean up tmp directory */
-            dir("${env.workspace}@tmp") {
-                deleteDir()
-            }
-            /* clean up script directory */
-            dir("${env.workspace}@script") {
-                deleteDir()
-            }
-        }
+        // cleanup{
+        //     /* clean up our workspace */
+        //     deleteDir()
+        //     /* clean up tmp directory */
+        //     dir("${env.workspace}@tmp") {
+        //         deleteDir()
+        //     }
+        //     /* clean up script directory */
+        //     dir("${env.workspace}@script") {
+        //         deleteDir()
+        //     }
+        // }
     }
 }
