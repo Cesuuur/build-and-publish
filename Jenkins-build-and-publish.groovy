@@ -64,7 +64,8 @@ pipeline {
                     rm -rf $SERVICE_NAME 
                     mkdir $SERVICE_NAME 
                     cd $SERVICE_NAME
-                    ls | echo
+                    git credentialsId: '11b0c311-eb71-4277-a430-4071de1d8c82', url: 'git@github.com:Telefonica/pesp-dcip-microbackend.git'
+                    cd pesp-dcip-microbackend
                     '''
                 }
                 // git clone --single-branch --branch $GIT_HUB_BRANCH $GIT_HUB_URL .
