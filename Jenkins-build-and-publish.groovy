@@ -64,7 +64,7 @@ pipeline {
                     rm -rf $SERVICE_NAME 
                     mkdir $SERVICE_NAME 
                     cd $SERVICE_NAME
-                    git clone --single-branch --credentialsId: '11b0c311-eb71-4277-a430-4071de1d8c82', url: 'git@github.com:Cesuuur/build-and-publish.git'
+                    ls | echo
                     '''
                 }
                 // git clone --single-branch --branch $GIT_HUB_BRANCH $GIT_HUB_URL .
