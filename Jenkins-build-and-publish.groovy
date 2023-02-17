@@ -257,65 +257,6 @@ pipeline {
                 }
             }
         }
-        stage('Modify image name and upload to AWS') {
-            when {
-                expression {
-                    return "${DOCKER_VAR}".toBoolean() 
-                }
-            }     
-            steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'evolved5g-push', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {               
-                    script {    
-                        def cmd = "docker ps --format '{{.Image}}'"
-                        def cmd2 = "docker ps --format '{{.Names}}'"
-                        def image = sh(returnStdout: true, script: cmd).trim()
-                        def name  = sh(returnStdout: true, script: cmd2).trim()
-                        sh '''$(aws ecr get-login --no-include-email)'''
-                        [image.tokenize(), name.tokenize()].transpose().each { x ->
-
-                            if ( env.PATH_AWS != null){
-                            sh """ docker tag ${x[0]} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/evolved5g${env.PATH_AWS}:${SERVICE_NAME}-${x[1]}-${VERSION}"""
-                            sh """ docker tag ${x[0]} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/evolved5g${env.PATH_AWS}:${SERVICE_NAME}-${x[1]}-latest"""
-                            sh """ docker image push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/evolved5g${env.PATH_AWS}:${SERVICE_NAME}-${x[1]}-${VERSION}"""
-                            sh """ docker image push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/evolved5g${env.PATH_AWS}:${SERVICE_NAME}-${x[1]}-latest"""
-                            }
-                            else{
-                            sh """ docker tag ${x[0]} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/evolved5g:${SERVICE_NAME}-${x[1]}-${VERSION}"""
-                            sh """ docker tag ${x[0]} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/evolved5g:${SERVICE_NAME}-${x[1]}-latest"""
-                            sh """ docker image push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/evolved5g:${SERVICE_NAME}-${x[1]}-${VERSION}"""
-                            sh """ docker image push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/evolved5g:${SERVICE_NAME}-${x[1]}-latest"""
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        stage('Publish in AWS - Dockerfile') {
-            when {
-                expression {
-                    return !"${DOCKER_VAR}".toBoolean() 
-                }
-            }    
-            steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'evolved5g-push', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-                    sh '''
-                    $(aws ecr get-login --no-include-email)
-                    if [[ -n ${PATH_AWS} ]]
-                    then
-                        docker image tag ${SERVICE_NAME} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/evolved5g${env.PATH_AWS}:${SERVICE_NAME}-${VERSION}
-                        docker image tag ${SERVICE_NAME} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/evolved5g${env.PATH_AWS}:${SERVICE_NAME}-latest
-                        docker image push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/evolved5g${env.PATH_AWS}:${SERVICE_NAME}-latest
-                        docker image push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/evolved5g${env.PATH_AWS}:${SERVICE_NAME}-${VERSION}
-                    else
-                        docker image tag ${SERVICE_NAME} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/evolved5g:${SERVICE_NAME}-${VERSION}
-                        docker image tag ${SERVICE_NAME} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/evolved5g:${SERVICE_NAME}-latest
-                        docker image push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/evolved5g:${SERVICE_NAME}-latest
-                        docker image push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/evolved5g:${SERVICE_NAME}-${VERSION}
-                    fi
-                    '''  
-                }   
-            }
-        }
         stage('Modify container name to upload Docker-compose to Artifactory') {
             when {
                 expression {
