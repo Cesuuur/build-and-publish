@@ -64,10 +64,10 @@ pipeline {
                     rm -rf $SERVICE_NAME 
                     mkdir $SERVICE_NAME 
                     cd $SERVICE_NAME
-                    ls
-                    git clone --single-branch --branch $GIT_HUB_BRANCH $GIT_HUB_URL .
+                    git clone --single-branch --credentialsId: '11b0c311-eb71-4277-a430-4071de1d8c82', url: 'git@github.com:Cesuuur/build-and-publish.git'
                     '''
                 }
+                // git clone --single-branch --branch $GIT_HUB_BRANCH $GIT_HUB_URL .
            }
         }
         stage('Check if there is a docker-compose in the repository') {
@@ -88,6 +88,21 @@ pipeline {
                 dir ("${env.WORKSPACE}/${SERVICE_NAME}/") {
                     sh '''
                     docker build -t ${SERVICE_NAME} .
+                    '''
+                }
+            }
+        }
+        stage('Build Docker Compose') {
+            when {
+                expression {
+                    return "${DOCKER_VAR}".toBoolean()
+                }
+            }  
+            steps {
+                dir ("${env.WORKSPACE}/${SERVICE_NAME}/") {
+                    sh '''
+                    docker network create demo-network
+                    docker-compose up --build --force-recreate -d
                     '''
                 }
             }
