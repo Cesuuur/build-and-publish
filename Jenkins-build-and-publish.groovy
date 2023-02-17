@@ -118,7 +118,7 @@ pipeline {
         stage('Publish in Artifacotry') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker_pull_cred', usernameVariable: 'ARTIFACTORY_USER', passwordVariable: 'ARTIFACTORY_CREDENTIALS')]) {
-                    dir ("${env.WORKSPACE}/${NETAPP_NAME}/services") {
+                    dir ("${env.WORKSPACE}/${SERVICE_NAME}/services") {
                         sh '''
                             docker login --username ${ARTIFACTORY_USER} --password "${ARTIFACTORY_CREDENTIALS}" dockerhub.hi.inet
                             docker-compose push
