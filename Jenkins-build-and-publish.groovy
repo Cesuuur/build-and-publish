@@ -100,38 +100,32 @@ pipeline {
                 }
             }
         }
-        stage('Modify container name to upload Docker-compose to Artifactory') {
-            when {
-                expression {
-                    return "${DOCKER_VAR}".toBoolean()  
-                }
-            }  
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'docker_pull_cred', usernameVariable: 'ARTIFACTORY_USER', passwordVariable: 'ARTIFACTORY_CREDENTIALS')]) {
-                    retry(1){
-                        script {   
-                            sh ''' docker login --username ${ARTIFACTORY_USER} --password "${ARTIFACTORY_CREDENTIALS}" dockerhub.hi.inet '''
-                            def cmd = "docker ps --format '{{.Image}}'"
-                            def cmd2 = "docker ps --format '{{.Names}}'"
-                            def image = sh(returnStdout: true, script: cmd).trim()
-                            def name  = sh(returnStdout: true, script: cmd2).trim()
-                            sh '''$(aws ecr get-login --no-include-email)'''
-                            [image.tokenize(), name.tokenize()].transpose().each { x ->
-                                if (env.PATH_DOCKER != null){
-                                sh """ docker tag "${x[0]}" dockerhub.hi.inet/evolved-5g/${PATH_DOCKER}${SERVICE_NAME}/"${SERVICE_NAME}-${x[1]}":${VERSION}"""
-                                sh """ docker tag "${x[0]}" dockerhub.hi.inet/evolved-5g/${PATH_DOCKER}${SERVICE_NAME}/"${SERVICE_NAME}-${x[1]}":latest"""
-                                sh """ docker image push --all-tags dockerhub.hi.inet/evolved-5g/${PATH_DOCKER}${SERVICE_NAME}/"${SERVICE_NAME}-${x[1]}" """
-                                } else{
-                                sh """ docker tag "${x[0]}" dockerhub.hi.inet/evolved-5g/${SERVICE_NAME}/"${SERVICE_NAME}-${x[1]}":${VERSION}"""
-                                sh """ docker tag "${x[0]}" dockerhub.hi.inet/evolved-5g/${SERVICE_NAME}/"${SERVICE_NAME}-${x[1]}":latest"""
-                                sh """ docker image push --all-tags dockerhub.hi.inet/evolved-5g/${SERVICE_NAME}/"${SERVICE_NAME}-${x[1]}" """
-                                }
-                            }
-                        }
-                    }
-                }               
-            }
-        }   
+        // stage('Modify container name to upload Docker-compose to Artifactory') {
+        //     when {
+        //         expression {
+        //             return "${DOCKER_VAR}".toBoolean()  
+        //         }
+        //     }  
+        //     steps {
+        //         withCredentials([usernamePassword(credentialsId: 'docker_pull_cred', usernameVariable: 'ARTIFACTORY_USER', passwordVariable: 'ARTIFACTORY_CREDENTIALS')]) {
+        //             retry(1){
+        //                 script {   
+        //                     sh ''' docker login --username ${ARTIFACTORY_USER} --password "${ARTIFACTORY_CREDENTIALS}" dockerhub.hi.inet '''
+        //                     def cmd = "docker ps --format '{{.Image}}'"
+        //                     def cmd2 = "docker ps --format '{{.Names}}'"
+        //                     def image = sh(returnStdout: true, script: cmd).trim()
+        //                     def name  = sh(returnStdout: true, script: cmd2).trim()
+        //                     sh '''$(aws ecr get-login --no-include-email)'''
+        //                     [image.tokenize(), name.tokenize()].transpose().each { x ->
+        //                         sh """ docker tag "${x[0]}" dockerhub.hi.inet/evolved-5g/${SERVICE_NAME}/"${SERVICE_NAME}-${x[1]}":${VERSION}"""
+        //                         sh """ docker tag "${x[0]}" dockerhub.hi.inet/evolved-5g/${SERVICE_NAME}/"${SERVICE_NAME}-${x[1]}":latest"""
+        //                         sh """ docker image push --all-tags dockerhub.hi.inet/evolved-5g/${SERVICE_NAME}/"${SERVICE_NAME}-${x[1]}" """
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     }               
+        // }
         stage('Publish in Artefactory') {
             when {
                 expression {
@@ -143,15 +137,9 @@ pipeline {
                     retry(1){
                         sh '''
                         docker login --username ${ARTIFACTORY_USER} --password "${ARTIFACTORY_CREDENTIALS}" dockerhub.hi.inet
-                        if [[ -n ${PATH_DOCKER} ]]
-                        then
-                            docker image tag ${SERVICE_NAME} dockerhub.hi.inet/evolved-5g/${PATH_DOCKER}${SERVICE_NAME}:${VERSION}
-                            docker image tag ${SERVICE_NAME} dockerhub.hi.inet/evolved-5g/${PATH_DOCKER}${SERVICE_NAME}:latest
-                            docker image push --all-tags dockerhub.hi.inet/evolved-5g/${PATH_DOCKER}${SERVICE_NAME}
-                        else
-                            docker image tag ${SERVICE_NAME} dockerhub.hi.inet/evolved-5g/${SERVICE_NAME}:${VERSION}
-                            docker image tag ${SERVICE_NAME} dockerhub.hi.inet/evolved-5g/${SERVICE_NAME}:latest
-                            docker image push --all-tags dockerhub.hi.inet/evolved-5g/${SERVICE_NAME}
+                        docker image tag ${SERVICE_NAME} dockerhub.hi.inet/evolved-5g/${SERVICE_NAME}:${VERSION}
+                        docker image tag ${SERVICE_NAME} dockerhub.hi.inet/evolved-5g/${SERVICE_NAME}:latest
+                        docker image push --all-tags dockerhub.hi.inet/evolved-5g/${SERVICE_NAME}
                         fi
                         '''
                     }
