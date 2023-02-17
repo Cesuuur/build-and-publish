@@ -72,7 +72,7 @@ pipeline {
                             git branch: 'main',
                                 credentialsId: '11b0c311-eb71-4277-a430-4071de1d8c82',
                                 url: 'git@github.com:Telefonica/pesp-dcip-microbackend.git'
-                            sh ''' cd pesp-dcip-microbackend'''
+                            // sh ''' cd pesp-dcip-microbackend'''
                         }
                     }
                 }
